@@ -1,0 +1,21 @@
+# Dev files
+backend/venv/
+backend/.env
+backend/__pycache__/
+backend/*.db
+web-frontend/node_modules/
+
+# Docker (not needed on Vercel)
+docker-compose.yml
+backend/Dockerfile
+backend/.dockerignore
+web-frontend/Dockerfile
+web-frontend/.dockerignore
+
+# Docs
+docs/
+
+# Other
+.git/
+*.pyc
+__pycache__/

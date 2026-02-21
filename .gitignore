@@ -1,0 +1,26 @@
+# Byte-compiled
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual environments
+backend/venv/
+.venv/
+
+# Database files
+*.db
+*.sqlite3
+
+# Environment files
+.env
+backend/.env
+
+# IDE
+.vscode/
+.idea/
+
+# Node
+web-frontend/node_modules/
+
+# Build artifacts
+web-frontend/dist/

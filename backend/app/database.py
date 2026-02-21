@@ -1,0 +1,45 @@
+"""
+KeyAuth - Database connection module
+SQLAlchemy engine, session, and base
+"""
+from sqlalchemy import create_engine
+from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker
+from app.config import settings
+
+# Handle SQLite specific args
+connect_args = {}
+if settings.DATABASE_URL.startswith("sqlite"):
+    connect_args = {"check_same_thread": False}
+
+engine = create_engine(
+    settings.DATABASE_URL,
+    connect_args=connect_args,
+    echo=False,  # Disable SQL logging (especially in serverless)
+)
+
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+Base = declarative_base()
+
+_db_initialized = False
+
+
+def get_db():
+    """Dependency: yields a database session per request."""
+    # Ensure tables exist (critical for Vercel serverless cold starts)
+    global _db_initialized
+    if not _db_initialized:
+        init_db()
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+
+def init_db():
+    """Create all tables (idempotent)."""
+    global _db_initialized
+    Base.metadata.create_all(bind=engine)
+    _db_initialized = True

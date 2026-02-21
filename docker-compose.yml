@@ -1,0 +1,45 @@
+# KeyAuth — Docker Compose
+# Runs backend API + web frontend together
+
+services:
+  # ── Backend API ─────────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: keyauth-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - APP_NAME=KeyAuth
+      - DATABASE_URL=sqlite:///./keystroke_auth.db
+      - SECRET_KEY=${SECRET_KEY:-keyauth-production-secret-change-me}
+      - ALGORITHM=HS256
+      - ACCESS_TOKEN_EXPIRE_MINUTES=60
+      - ENROLLMENT_SAMPLES_REQUIRED=5
+      - AUTH_CONFIDENCE_THRESHOLD=0.85
+      - CORS_ORIGINS=http://localhost:5173,http://localhost:3000,http://localhost
+    volumes:
+      - backend-data:/app/data
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/')" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ── Web Frontend ────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./web-frontend
+      dockerfile: Dockerfile
+    container_name: keyauth-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  backend-data:
