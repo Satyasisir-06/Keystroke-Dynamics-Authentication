@@ -8,23 +8,27 @@ from sqlalchemy.orm import sessionmaker
 from app.config import settings
 
 # Build engine kwargs based on database type
+db_url = settings.DATABASE_URL
 connect_args = {}
 engine_kwargs = {"echo": False}
 
-if settings.DATABASE_URL.startswith("sqlite"):
+if db_url.startswith("sqlite"):
     connect_args = {"check_same_thread": False}
-else:
+elif db_url.startswith("postgresql"):
+    # Use pg8000 driver (pure Python, no compilation needed for Vercel)
+    if "pg8000" not in db_url:
+        db_url = db_url.replace("postgresql://", "postgresql+pg8000://", 1)
     # PostgreSQL connection pool settings (optimized for serverless)
     engine_kwargs.update({
-        "pool_size": 5,
-        "max_overflow": 10,
+        "pool_size": 3,
+        "max_overflow": 5,
         "pool_timeout": 30,
-        "pool_recycle": 300,  # Recycle connections every 5 min
-        "pool_pre_ping": True,  # Verify connections before use
+        "pool_recycle": 300,
+        "pool_pre_ping": True,
     })
 
 engine = create_engine(
-    settings.DATABASE_URL,
+    db_url,
     connect_args=connect_args,
     **engine_kwargs,
 )
