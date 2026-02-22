@@ -9,7 +9,6 @@ import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'backend'))
 
 # Set Vercel-specific environment defaults
-os.environ.setdefault('DATABASE_URL', 'sqlite:////tmp/keystroke_auth.db')
 os.environ.setdefault('DEBUG', 'False')
 os.environ.setdefault('CORS_ORIGINS', '*')
 

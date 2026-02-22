@@ -20,6 +20,6 @@
     },
     "env": {
         "SECRET_KEY": "@keyauth-secret-key",
-        "DATABASE_URL": "sqlite:////tmp/keystroke_auth.db"
+        "DATABASE_URL": "@keyauth-database-url"
     }
 }

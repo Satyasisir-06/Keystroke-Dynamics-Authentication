@@ -1,21 +1,32 @@
 """
 KeyAuth - Database connection module
-SQLAlchemy engine, session, and base
+SQLAlchemy engine, session, and base — supports PostgreSQL (Supabase) and SQLite
 """
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from app.config import settings
 
-# Handle SQLite specific args
+# Build engine kwargs based on database type
 connect_args = {}
+engine_kwargs = {"echo": False}
+
 if settings.DATABASE_URL.startswith("sqlite"):
     connect_args = {"check_same_thread": False}
+else:
+    # PostgreSQL connection pool settings (optimized for serverless)
+    engine_kwargs.update({
+        "pool_size": 5,
+        "max_overflow": 10,
+        "pool_timeout": 30,
+        "pool_recycle": 300,  # Recycle connections every 5 min
+        "pool_pre_ping": True,  # Verify connections before use
+    })
 
 engine = create_engine(
     settings.DATABASE_URL,
     connect_args=connect_args,
-    echo=False,  # Disable SQL logging (especially in serverless)
+    **engine_kwargs,
 )
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)

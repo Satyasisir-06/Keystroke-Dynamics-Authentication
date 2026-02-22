@@ -14,11 +14,8 @@ class Settings(BaseSettings):
     APP_VERSION: str = "1.0.0"
     DEBUG: bool = not IS_VERCEL
 
-    # Database — Vercel serverless uses /tmp/ (only writable dir)
-    DATABASE_URL: str = (
-        "sqlite:////tmp/keystroke_auth.db" if IS_VERCEL
-        else "sqlite:///./keystroke_auth.db"
-    )
+    # Database — Supabase PostgreSQL (falls back to SQLite for local dev)
+    DATABASE_URL: str = "postgresql://postgres:[YOUR-PASSWORD]@db.jmqxshpddchmkaklxzej.supabase.co:5432/postgres"
 
     # JWT
     SECRET_KEY: str = "keyauth-dev-secret-key"
