@@ -14,10 +14,19 @@ engine_kwargs = {"echo": False}
 
 if db_url.startswith("sqlite"):
     connect_args = {"check_same_thread": False}
-elif db_url.startswith("postgresql"):
-    # Use pg8000 driver (pure Python, no compilation needed for Vercel)
-    if "pg8000" not in db_url:
-        db_url = db_url.replace("postgresql://", "postgresql+pg8000://", 1)
+else:
+    # Force pg8000 driver for ALL PostgreSQL URLs (pure Python — no pg_config needed)
+    # Handle all common URL formats: postgres://, postgresql://, postgresql+psycopg2://
+    for prefix in [
+        "postgresql+psycopg2://",
+        "postgresql+psycopg2binary://",
+        "postgres://",
+        "postgresql://",
+    ]:
+        if db_url.startswith(prefix):
+            db_url = "postgresql+pg8000://" + db_url[len(prefix):]
+            break
+
     # PostgreSQL connection pool settings (optimized for serverless)
     engine_kwargs.update({
         "pool_size": 3,
@@ -26,6 +35,7 @@ elif db_url.startswith("postgresql"):
         "pool_recycle": 300,
         "pool_pre_ping": True,
     })
+
 
 engine = create_engine(
     db_url,
